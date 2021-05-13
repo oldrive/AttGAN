@@ -7,7 +7,7 @@ from utils import path_util, dataset_util
 
 
 # ==============================================================================
-# =                                 datasets                                    =
+# =                                 datasets                                   =
 # ==============================================================================
 def make_celeba_dataset(img_dir,
                         label_path,
@@ -69,6 +69,37 @@ def make_celeba_dataset(img_dir,
 
     return dataset, img_shape, len_dataset
 
+
+# ==============================================================================
+# =                                 特征标签的冲突处理                            =
+# ==============================================================================
+def check_attribute_conflict(att_batch, att_name, att_names):
+    def _set(att, value, att_name):
+        if att_name in att_names:
+            att[att_names.index(att_name)] = value
+
+    idx = att_names.index(att_name)
+
+    for att in att_batch:
+        if att_name in ['Bald', 'Receding_Hairline'] and att[idx] == 1:  # 特征“秃子”，“高发际线”和“刘海”有冲突
+            _set(att, 0, 'Bangs')
+        elif att_name == 'Bangs' and att[idx] == 1:  # 有刘海就不能为秃子或者高发际线
+            _set(att, 0, 'Bald')
+            _set(att, 0, 'Receding_Hairline')
+        elif att_name in ['Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Gray_Hair'] and att[idx] == 1:  # 头发颜色之间有冲突
+            for n in ['Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Gray_Hair']:
+                if n != att_name:
+                    _set(att, 0, n)
+        elif att_name in ['Straight_Hair', 'Wavy_Hair'] and att[idx] == 1:  # 直发与卷发之间有冲突
+            for n in ['Straight_Hair', 'Wavy_Hair']:
+                if n != att_name:
+                    _set(att, 0, n)
+        elif att_name in ['Mustache', 'No_Beard'] and att[idx] == 1:  # 有胡子与没胡子之间有冲突
+            for n in ['Mustache', 'No_Beard']:
+                if n != att_name:
+                    _set(att, 0, n)
+
+    return att_batch
 
 
 

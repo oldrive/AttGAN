@@ -17,6 +17,12 @@ ATT_ID = {'5_o_Clock_Shadow': 0, 'Arched_Eyebrows': 1, 'Attractive': 2,
 ID_ATT = {value: key for key, value in ATT_ID.items()}  # {'0': 5_o_Clock_Shadow, ...}
 
 
+# ==============================================================================
+# =                                  网络设置                                   =
+# ==============================================================================
+N_UPSAMPLINGS = 5  # G_dec中上采样（反卷积层）个数
+N_DOWNSAMPLINGS = 5  # G_enc, D, C中下采样（卷积层）个数
+
 
 
 
