@@ -20,7 +20,13 @@ def tile_concat(a_list, b_list=[]):
     return tf.concat(a_list + b_list, axis=-1)  # 返回值的list[0].shape=[N, H, W, C_a + C_b]
 
 
+def tile(z, att):  # 将att除了最后一维，扩展为z的shape
+    # z.shape=[batch, W, H, N_C]
+    # att.shape: [batch, N_C] ==> [batch, W, H, N_C]
+    att = tf.reshape(att, [-1, 1, 1, att.shape[-1]])  # b.shape: (N, 1, 1, C_b)
+    att = tf.tile(att, [1, z.shape[1], z.shape[2], 1])
 
+    return att
 
 
 
