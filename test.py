@@ -83,12 +83,16 @@ from tensorflow.keras import layers, Model, Sequential
 # layers.concatenate()
 
 
+# zs = [tf.zeros((64, 16, 16, 512)), tf.ones((64, 8, 8, 1024))]
+# zs_shape = [z.shape for z in zs]
+# print(zs_shape)
+
+# a = np.arange(6).reshape((3, 2))
+# print(a)
+# print(tf.random.shuffle(a))
+
 a = [1, 2, 3]
-print(a + [4])
-
-
-
-
+print(*a)
 
 
 

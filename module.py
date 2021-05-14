@@ -8,7 +8,7 @@ from utils import tile_util
 # ==============================================================================
 # =                        256x256x3 ==> G_enc ==> 8x8x1024                    =
 # ==============================================================================
-def G_enc(input_shape=(256, 256, 3), dim=64, n_downsamplings=5, weight_decay=0.0, name='G_enc'):
+def get_G_enc(input_shape=(256, 256, 3), dim=64, n_downsamplings=5, weight_decay=0.0, name='G_enc'):
     zs = []  # 每一层的输出，用于与G_dec之间的跳跃链接以形成U-NET
 
     inputs = layers.Input(shape=input_shape)
@@ -27,22 +27,27 @@ def G_enc(input_shape=(256, 256, 3), dim=64, n_downsamplings=5, weight_decay=0.0
         h = layers.LeakyReLU()(h)
         zs.append(h)
 
-    return zs, Model(inputs=inputs, outputs=h, name=name)
+    # return Model(inputs=inputs, outputs=[h, zs], name=name)
+    return Model(inputs=inputs, outputs=zs, name=name)
 
 
-# print(G_enc()[1].summary())
+# print(G_enc().output)
+# print(G_enc().summary())
 
 
 # ==============================================================================
 # =                  8x8x(1024 + n_att) ==> G_dec ==> 256x256x3                =
 # ==============================================================================
-def G_dec(zs_shape, atts_shape, dim=64, n_upsamplings=5, shortcut_layers=1, inject_layers=1, weight_decay=0.0, name='G_dec'):
+def get_G_dec(zs_shape, atts_shape, dim=64, n_upsamplings=5, shortcut_layers=1, inject_layers=1, weight_decay=0.0, name='G_dec'):
+    # zs = G_enc().output[1]
     # zs_shape = [z_0_shape, z_1_shape, ... ]对应着G_enc的每一层输出
     # input_shape = z_shape[1: -1] + [z_shape[-1] + atts_shape[-1]]
     inputs_1 = []
     for i in range(len(zs_shape)):
         inputs_1.append(layers.Input(shape=zs_shape[i][1:]))
     input_2 = layers.Input(shape=atts_shape)
+    # inputs = inputs_1 + [input_2]
+    # print(len(inputs))
     a_1 = tile_util.tile(inputs_1[-1], input_2)  # 将atts的维度扩展到enc的最后一层输出z一样（除了最后一维）
     x = layers.Concatenate()([inputs_1[-1], a_1])  # 再将z和atts进行拼接
 
@@ -63,11 +68,11 @@ def G_dec(zs_shape, atts_shape, dim=64, n_upsamplings=5, shortcut_layers=1, inje
     return Model(inputs=inputs_1 + [input_2], outputs=outputs, name=name)
 
 
-# zs = [tf.zeros((64, 16, 16, 512)), tf.ones((64, 8, 8, 1024))]
+# zs = get_G_enc()
 # zs_shape = []
-# for z in zs:
+# for z in zs.output:
 #     zs_shape.append(z.shape)
-# dec = G_dec(zs_shape, atts_shape=(10, ))
+# dec = get_G_dec(zs_shape, atts_shape=(10, ))
 # print(dec.summary())
 
 
@@ -75,7 +80,7 @@ def G_dec(zs_shape, atts_shape, dim=64, n_upsamplings=5, shortcut_layers=1, inje
 # =                             256x256x3 ==> D ==> 1                          =
 # =                            256x256x3 ==> C ==> n_atts                      =
 # ==============================================================================
-def D_and_C(n_atts, input_shape=(256, 256, 3), dim=64, fc_dim=1024, n_downsamplings=5, weight_decay=0.0, name='D_and_C'):
+def get_D_and_C(n_atts, input_shape=(256, 256, 3), dim=64, fc_dim=1024, n_downsamplings=5, weight_decay=0.0):
     # n_atts:特征的数量，也是分类器最后一层的输出维度
     inputs = layers.Input(shape=input_shape)
 
@@ -109,8 +114,8 @@ def D_and_C(n_atts, input_shape=(256, 256, 3), dim=64, fc_dim=1024, n_downsampli
     h_C = layers.Dense(n_atts)(h_C)
     outputs_C = tf.nn.sigmoid(h_C)
 
-    D = Model(inputs=inputs, outputs=outputs_D)
-    C = Model(inputs=inputs, outputs=outputs_C)
+    D = Model(inputs=inputs, outputs=outputs_D, name='Discriminator')
+    C = Model(inputs=inputs, outputs=outputs_C, name='Classifier')
     return D, C
 
 
