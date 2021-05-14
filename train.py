@@ -1,12 +1,11 @@
 import tensorflow as tf
+tf.config.experimental.set_memory_growth(tf.config.list_physical_devices("GPU")[0], True)  # 设置GPU显存用量按需使用, 需要紧跟在import tf后面设置GPU显存，不然后面导入的包可能会实例化模型，造成显存分配失败
+
 import os
 import tqdm
 
-import config, data, loss, module
+import config, dataset, loss, module
 from utils import path_util
-
-
-tf.config.experimental.set_memory_growth(tf.config.list_physical_devices("GPU")[0], True)  # 设置GPU显存用量按需使用
 
 
 # ==============================================================================
@@ -19,7 +18,7 @@ path_util.mkdir(output_dir)
 # ==============================================================================
 # =                               1.   data                                    =
 # ==============================================================================
-train_dataset, train_img_shape, len_train_dataset = data.make_celeba_dataset(config.IMG_DIR,
+train_dataset, train_img_shape, len_train_dataset = dataset.make_celeba_dataset(config.IMG_DIR,
                                                                              config.TRAIN_LABEL_PATH,
                                                                              config.DEFAULT_ATT_NAMES,
                                                                              config.BATCH_SIZE,
@@ -51,11 +50,13 @@ D, C = module.get_D_and_C(n_atts=n_atts, input_shape=train_img_shape, n_downsamp
 # print(D.trainable_weights[0])
 # print('==========C==============')
 # print(C.trainable_weights[0])
-print(G_dec.input)
+# print(G_dec.input)
 for imgs_test, atts_test in train_dataset.take(1):  # 确保G_enc有五个输出
     zs_test = G_enc(imgs_test)
 
-    # G_dec(zs_test[0], zs_test[1], zs_test[2], zs_test[3], zs_test[4], atts_test)
+    print(len(imgs_test))
+
+    G_dec(zs_test + [atts_test])  # 多输入的模型，在输入数据时需要传入列表进去
     # print(len(G_enc(imgs_test)))
 
 

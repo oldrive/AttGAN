@@ -51,7 +51,7 @@ D_ATTRIBUTE_LOSS_WEIGHT = 1.0  # D（分类器）中特征限制损失的权重
 # ==============================================================================
 N_EPOCHS = 60
 EPOCH_START_DECAY = 30
-BATCH_SIZE = 32
+BATCH_SIZE = 16  # 设置为32时会内存溢出
 LEARNING_RATE = 2e-4
 BATE_1 = 0.5
 
