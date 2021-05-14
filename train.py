@@ -51,11 +51,11 @@ D, C = module.get_D_and_C(n_atts=n_atts, input_shape=train_img_shape, n_downsamp
 # print(D.trainable_weights[0])
 # print('==========C==============')
 # print(C.trainable_weights[0])
-print(G_dec.input)
+# print(G_dec.input)
 for imgs_test, atts_test in train_dataset.take(1):  # 确保G_enc有五个输出
     zs_test = G_enc(imgs_test)
 
-    # G_dec(zs_test[0], zs_test[1], zs_test[2], zs_test[3], zs_test[4], atts_test)
+    G_dec(zs_test[0], zs_test[1], zs_test[2], zs_test[3], zs_test[4], atts_test)
     # print(len(G_enc(imgs_test)))
 
 
