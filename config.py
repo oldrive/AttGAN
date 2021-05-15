@@ -43,14 +43,14 @@ WEIGHT_DECAY = 0.0
 GP_WEIGHT = 10.0  # 梯度惩罚项的权重
 G_RECONSTRUCTION_LOSS_WEIGHT = 100.0  # G（G_enc和G_dec）中重构损失的权重
 G_ATTRIBUTE_LOSS_WEIGHT = 10.0  # G中特征限制损失的权重
-D_ATTRIBUTE_LOSS_WEIGHT = 1.0  # D（分类器）中特征限制损失的权重
+C_ATTRIBUTE_LOSS_WEIGHT = 1.0  # C（分类器）中特征限制损失的权重
 
 
 # ==============================================================================
 # =                              训练设置                                       =
 # ==============================================================================
 N_EPOCHS = 60
-EPOCH_START_DECAY = 30
+EPOCH_START_DECAY = 30  # 从第30个epoch，学习率开始衰减
 BATCH_SIZE = 16  # 设置为32时会内存溢出
 LEARNING_RATE = 2e-4
 BATE_1 = 0.5

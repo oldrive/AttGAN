@@ -91,8 +91,8 @@ from tensorflow.keras import layers, Model, Sequential
 # print(a)
 # print(tf.random.shuffle(a))
 
-a = [1, 2, 3]
-print(*a)
+O = tf.keras.optimizers.Adam(learning_rate=0.05)
+# print(O.)
 
 
 
