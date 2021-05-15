@@ -2,8 +2,9 @@ import tensorflow as tf
 import numpy as np
 from utils import path_util
 import config
-import data
+import dataset
 from tensorflow.keras import layers, Model, Sequential
+import tqdm
 
 # label_path = 'data/img_celeba/train_label.txt'
 # img_names = np.genfromtxt(label_path, dtype=str, usecols=0)
@@ -13,9 +14,17 @@ from tensorflow.keras import layers, Model, Sequential
 # att_names = ['Bald', 'Bangs', 'Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Bushy_Eyebrows', 'Eyeglasses',
 #                      'Male', 'Mouth_Slightly_Open', 'Mustache', 'No_Beard', 'Pale_Skin', 'Young']
 #
-# datasets, img_shape, len_datasets = data.make_celeba_dataset(img_dir, label_path, att_names, batch_size=32, training=False)
+# datasets, img_shape, len_datasets = dataset.make_celeba_dataset(img_dir, label_path, att_names, batch_size=32, training=False)
+# train_dataset_0, train_label_0 = list(datasets.take(1))[0]
+# print(train_dataset_0, train_label_0)
 # for dataset, label in datasets.take(1):
+#     print(label)
+#     tmp = np.array(label, copy=True)
+#     print(tmp)
+# for dataset, label in tqdm.tqdm(datasets, desc='Inner Epoch Loop', total=len_datasets):
 #     print(dataset[0].shape, label[0])
+# for it in datasets.as_numpy_iterator():
+#     print(it[1][0])
 
 
 # def tile_concat(a_list, b_list=[]):
@@ -91,8 +100,7 @@ from tensorflow.keras import layers, Model, Sequential
 # print(a)
 # print(tf.random.shuffle(a))
 
-O = tf.keras.optimizers.Adam(learning_rate=0.05)
-# print(O.)
+
 
 
 

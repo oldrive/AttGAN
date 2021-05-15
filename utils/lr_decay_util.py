@@ -1,4 +1,7 @@
-class LinearDecayLR:
+import tensorflow as tf
+
+
+class LinearDecayLR(tf.keras.optimizers.schedules.LearningRateSchedule):
     # if `step` < `step_start_decay`: use fixed learning rate
     # else: linearly decay the learning rate to zero
 

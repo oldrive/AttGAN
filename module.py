@@ -1,7 +1,10 @@
 import tensorflow as tf
 from tensorflow.keras import layers, Model
-import tensorflow_addons as tfa
+# import tensorflow_addons as tfa
+# 如果使用tfa.layers.InstanceNormalization，在判别器和分类器的输出都会固定为0和[0.5, 0.5, ...]，原因不明
 
+import config
+import dataset
 from utils import tile_util
 
 
@@ -31,8 +34,8 @@ def get_G_enc(input_shape=(256, 256, 3), dim=64, n_downsamplings=5, weight_decay
     return Model(inputs=inputs, outputs=zs, name=name)
 
 
-# print(G_enc().output)
-# print(G_enc().summary())
+# print(get_G_enc().output)
+# print(get_G_enc().summary())
 
 
 # ==============================================================================
@@ -83,16 +86,17 @@ def get_G_dec(zs_shape, atts_shape, dim=64, n_upsamplings=5, shortcut_layers=1, 
 def get_D_and_C(n_atts, input_shape=(256, 256, 3), dim=64, fc_dim=1024, n_downsamplings=5, weight_decay=0.0):
     # n_atts:特征的数量，也是分类器最后一层的输出维度
     inputs = layers.Input(shape=input_shape)
+    # outs = []
 
     # 判别器与分类器共享的卷积层
     # D/C: 256x256x3 ==> 128x128x64 ==> 64x64x128 ==> 32x32x256 ==> 16x16x512 ==> 8x8x1024 ==> 65536
     h = layers.Conv2D(dim, 4, strides=2, padding='same', kernel_regularizer=tf.keras.regularizers.l2(weight_decay))(inputs)
-    h = tfa.layers.InstanceNormalization()(h)
+    h = layers.LayerNormalization()(h)
     h = layers.LeakyReLU()(h)
     for i in range(n_downsamplings - 1):
         d = min(dim * 2 ** (i + 1), 1024)
         h = layers.Conv2D(d, 4, strides=2, padding='same', kernel_regularizer=tf.keras.regularizers.l2(weight_decay))(h)
-        h = tfa.layers.InstanceNormalization()(h)
+        h = layers.LayerNormalization()(h)
         h = layers.LeakyReLU()(h)
 
     h = layers.Flatten()(h)
@@ -100,37 +104,29 @@ def get_D_and_C(n_atts, input_shape=(256, 256, 3), dim=64, fc_dim=1024, n_downsa
     # 判别器拥有的FC层
     # 65536 ==> 1024 ==> 1
     h_D = layers.Dense(fc_dim, kernel_regularizer=tf.keras.regularizers.l2(weight_decay))(h)
-    h_D = tfa.layers.InstanceNormalization()(h_D)
+    # outs.append(h_D)
+    h_D = layers.LayerNormalization()(h_D)
+    # outs.append(h_D)
     h_D = layers.LeakyReLU()(h_D)
+    # outs.append(h_D)
+
 
     outputs_D = layers.Dense(1)(h_D)
+    # outs.append(outputs_D)
 
     # 分类器拥有的FC层
     # 65536 ==> 1024 ==> n_atts
     h_C = layers.Dense(fc_dim, kernel_regularizer=tf.keras.regularizers.l2(weight_decay))(h)
-    h_C = tfa.layers.InstanceNormalization()(h_C)
+    h_C = layers.LayerNormalization()(h_C)
     h_C = layers.LeakyReLU()(h_C)
 
     h_C = layers.Dense(n_atts)(h_C)
     outputs_C = tf.nn.sigmoid(h_C)
 
+    # D = Model(inputs=inputs, outputs=outs, name='Discriminator')
     D = Model(inputs=inputs, outputs=outputs_D, name='Discriminator')
     C = Model(inputs=inputs, outputs=outputs_C, name='Classifier')
     return D, C
-
-
-# D, C = D_and_C(n_atts=10)
-# print(D.summary())
-# print(C.summary())
-
-
-
-
-
-
-
-
-
 
 
 
