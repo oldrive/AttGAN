@@ -173,7 +173,7 @@ def train_step_D(x_a, atts_a):
 # =                               3.5   sample                                 =
 # ==============================================================================
 val_x_a, val_atts_a = list(val_dataset.take(1))[0]  # 每次采样的图片固定取第一批
-def sampel_test(sample_x_a, sample_atts_a, epoch, iter):
+def sampel(sample_x_a, sample_atts_a, epoch, iter):
     atts_b_list = [sample_x_a]
     for i in range(n_atts):
         tmp = np.array(sample_atts_a, copy=True)
@@ -195,39 +195,17 @@ def sampel_test(sample_x_a, sample_atts_a, epoch, iter):
     image_util.imwrite(sample, '%s/Epoch-%d_Iter-%d.jpg' % (sample_dir, epoch, iter))
 
 
-def sample(datasets):
-    for x_a, atts_a in datasets.take(1):  # 每次采样的图片固定取第一批
-        atts_b_list = [atts_a]  # 第一个元素是对应图片的特征标签，值为0/1
-        for i in range(n_atts):
-            tmp = np.array(atts_a, copy=True)
-            tmp[:, i] = 1 - tmp[:, i]  # 修改特征标签，即原来是0的特征修改为1，原来是1的特征修改为0
-
-            tmp = dataset.check_attribute_conflict(tmp, config.DEFAULT_ATT_NAMES[i],
-                                                   config.DEFAULT_ATT_NAMES)  # 检测需要修改的一个特征有没有和原来的特征冲突
-            atts_b_list.append(tmp)  # tmp=修改单个特征之后的特征b, atts_b_list=[原来的特征标签， 修改第一个特征后的特征标签， ..., 修改第n_atts个特征后的特征标签]
-        return x_a, atts_b_list
-        # atts_b_list = [atts_a]  # 第一个元素是对应图片的特征标签，值为0/1
-        # for i in range(n_atts):
-        #     tmp = np.array(atts_a, copy=True)
-        #     tmp[:, i] = 1 - tmp[:, i]  # 修改特征标签，即原来是0的特征修改为1，原来是1的特征修改为0
-        #
-        #     tmp = dataset.check_attribute_conflict(tmp, config.DEFAULT_ATT_NAMES[i], config.DEFAULT_ATT_NAMES)  # 检测需要修改的一个特征有没有和原来的特征冲突
-        #     atts_b_list.append(tmp)  # tmp=修改单个特征之后的特征b, atts_b_list=[原来的特征标签， 修改第一个特征后的特征标签， ..., 修改第n_atts个特征后的特征标签]
-        #
-        # x_b_list = [x_a]  # 第一个元素是真实的图片集
-        # for i, atts_b in enumerate(atts_b_list[1:]):
-        #     atts_b_ = tf.cast((atts_b * 2 - 1), tf.float32)  # 特征标签0/1 ==> -1/1
-        #     # if i > 0:  # i==0时保留原来的真实图片
-        #         # atts_b_[..., i - 1].assign(atts_b_[..., i - 1] * 2.0)
-        #     x_b = G_dec(G_enc(x_a, training=False) + [atts_b_], training=False)
-        #     x_b_list.append(x_b)
-        #
-        # # print(x_b_list[0].shape)
-        # # sample = np.transpose(x_b_list, (1, 2, 0, 3, 4))  # (len, batch, H, W, N_C) ==> (batch, H, len, W, N_C)
-        # # print(sample.shape)
-        # # sample = np.reshape(sample, (-1, sample.shape[2] * sample.shape[3], sample.shape[4]))
-        # # print(sample.shape)
-        # return x_b_list
+# def sample_test(datasets):
+#     for x_a, atts_a in datasets.take(1):  # 每次采样的图片固定取第一批
+#         atts_b_list = [atts_a]  # 第一个元素是对应图片的特征标签，值为0/1
+#         for i in range(n_atts):
+#             tmp = np.array(atts_a, copy=True)
+#             tmp[:, i] = 1 - tmp[:, i]  # 修改特征标签，即原来是0的特征修改为1，原来是1的特征修改为0
+#
+#             tmp = dataset.check_attribute_conflict(tmp, config.DEFAULT_ATT_NAMES[i],
+#                                                    config.DEFAULT_ATT_NAMES)  # 检测需要修改的一个特征有没有和原来的特征冲突
+#             atts_b_list.append(tmp)  # tmp=修改单个特征之后的特征b, atts_b_list=[原来的特征标签， 修改第一个特征后的特征标签， ..., 修改第n_atts个特征后的特征标签]
+#         return x_a, atts_b_list
 
 
 # ==============================================================================
@@ -242,7 +220,7 @@ def train():
                 G_loss = train_step_G(x_a, atts_a)
 
             if G_optimizer.iterations.numpy() % 100 == 0:
-                sampel_test(val_x_a, val_atts_a, epoch, G_optimizer.iterations.numpy())
+                sampel(val_x_a, val_atts_a, epoch, G_optimizer.iterations.numpy())
 
         print('epoch:%d, g_loss:%f, d_loss:%f' % (epoch + 1, G_loss, D_and_C_loss))
 
